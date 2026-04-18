@@ -3,19 +3,24 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
-    <meta name="theme-color" content="#1b1744" />
+    <meta name="theme-color" content="#0c0c0c" />
     <title>てんちょーテトリス</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+P+One&family=Noto+Sans+JP:wght@500;700;900&display=swap"
+      rel="stylesheet"
+    />
     <style>
       :root {
-        --bg-1: #140a2e;
-        --bg-2: #3a1763;
-        --bg-3: #0c1a44;
-        --panel: rgba(255, 255, 255, 0.06);
-        --panel-stroke: rgba(255, 255, 255, 0.12);
-        --text: #f3f0ff;
-        --muted: #b8b3d9;
-        --accent: #ffd447;
-        --accent-2: #ff4fa3;
+        --red: #e8133a;
+        --red-deep: #a2032a;
+        --yellow: #ffe100;
+        --pink: #ff4da6;
+        --ink: #0a0a0a;
+        --paper: #fff;
+        --paper-2: #fff8e0;
+        --stroke: 4px;
       }
       * { box-sizing: border-box; }
       html, body {
@@ -25,22 +30,40 @@
         overflow: hidden;
       }
       body {
-        font-family: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Yu Gothic UI", sans-serif;
-        color: var(--text);
+        font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic UI", system-ui, sans-serif;
+        font-weight: 700;
+        color: var(--ink);
         background:
-          radial-gradient(1200px 800px at 20% 10%, rgba(255, 79, 163, 0.18), transparent 60%),
-          radial-gradient(900px 700px at 85% 90%, rgba(72, 207, 255, 0.18), transparent 55%),
-          linear-gradient(160deg, var(--bg-1) 0%, var(--bg-2) 50%, var(--bg-3) 100%);
+          radial-gradient(900px 700px at 10% 10%, rgba(232, 19, 58, 0.35), transparent 60%),
+          radial-gradient(900px 700px at 90% 95%, rgba(255, 225, 0, 0.22), transparent 60%),
+          radial-gradient(700px 500px at 70% 20%, rgba(255, 77, 166, 0.18), transparent 60%),
+          #0c0c0c;
         touch-action: manipulation;
         -webkit-tap-highlight-color: transparent;
         user-select: none;
       }
+      /* Animated diagonal "tape" background stripes */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: -20%;
+        background:
+          repeating-linear-gradient(
+            -20deg,
+            rgba(255, 225, 0, 0.04) 0 24px,
+            transparent 24px 64px
+          );
+        pointer-events: none;
+        z-index: 0;
+      }
       #app {
+        position: relative;
+        z-index: 1;
         display: grid;
         grid-template-rows: auto 1fr auto;
         height: 100dvh;
         max-height: 100dvh;
-        padding: 10px 14px;
+        padding: 10px 14px 8px;
         gap: 8px;
       }
       header {
@@ -49,30 +72,42 @@
         justify-content: space-between;
         gap: 8px;
       }
-      header h1 {
-        font-size: clamp(16px, 4vw, 22px);
+      .title {
+        font-family: "Mochiy Pop P One", "Noto Sans JP", sans-serif;
+        font-size: clamp(20px, 5.5vw, 30px);
+        color: var(--yellow);
+        -webkit-text-stroke: 4px #000;
+        paint-order: stroke fill;
+        text-shadow: 4px 4px 0 var(--red), 6px 6px 0 #000;
+        transform: rotate(-2deg);
         margin: 0;
-        background: linear-gradient(90deg, #ffd447, #ff4fa3 45%, #48cfff);
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-        letter-spacing: 0.04em;
+        letter-spacing: 0.02em;
+        line-height: 1;
+      }
+      .title .dot {
+        display: inline-block;
+        color: var(--red);
+        transform: rotate(4deg) translateY(2px);
       }
       .top-buttons { display: flex; gap: 6px; }
       .icon-btn {
-        background: var(--panel);
-        border: 1px solid var(--panel-stroke);
-        color: var(--text);
-        padding: 6px 10px;
-        border-radius: 10px;
-        font-size: 13px;
+        background: var(--paper);
+        border: 3px solid #000;
+        color: #000;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 14px;
+        font-weight: 900;
         cursor: pointer;
+        box-shadow: 3px 3px 0 #000;
+        transition: transform 0.05s;
       }
-      .icon-btn:active { transform: scale(0.96); }
+      .icon-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #000; }
+
       main {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) 150px;
-        gap: 10px;
+        grid-template-columns: minmax(0, 1fr) 170px;
+        gap: 12px;
         min-height: 0;
       }
       .board-wrap {
@@ -82,22 +117,28 @@
         justify-content: center;
         min-height: 0;
       }
+      .board-frame {
+        position: relative;
+        padding: 6px;
+        background: #fff;
+        border: 4px solid #000;
+        border-radius: 18px;
+        box-shadow: 6px 6px 0 #000, 0 0 0 3px var(--yellow) inset;
+        max-height: 100%;
+        max-width: 100%;
+      }
       canvas#board {
-        background:
-          linear-gradient(180deg, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.55)),
-          repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 32px),
-          repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 32px);
-        border-radius: 14px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255,255,255,0.08);
         display: block;
+        background: #111;
+        border-radius: 12px;
         max-height: 100%;
         max-width: 100%;
       }
       canvas#fx {
         position: absolute;
-        inset: 0;
+        inset: 6px;
         pointer-events: none;
-        border-radius: 14px;
+        border-radius: 12px;
       }
       .banner {
         position: absolute;
@@ -109,39 +150,71 @@
         z-index: 3;
       }
       .banner .text {
+        font-family: "Mochiy Pop P One", "Noto Sans JP", sans-serif;
         font-weight: 900;
-        font-size: clamp(34px, 9vw, 96px);
-        letter-spacing: 0.02em;
+        font-size: clamp(36px, 10vw, 110px);
+        letter-spacing: 0.01em;
         text-align: center;
-        padding: 6px 18px;
-        background: linear-gradient(90deg, #ffd447, #ff4fa3 40%, #48cfff);
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-        text-shadow: 0 0 30px rgba(255, 79, 163, 0.35);
+        color: var(--yellow);
+        -webkit-text-stroke: 7px #000;
+        paint-order: stroke fill;
+        text-shadow:
+          6px 6px 0 var(--red),
+          10px 10px 0 #000;
         opacity: 0;
-        transform: scale(0.6) rotate(-4deg);
-        filter: drop-shadow(0 6px 18px rgba(0,0,0,0.45));
+        transform: scale(0.4) rotate(-8deg);
+        white-space: nowrap;
       }
       .banner.show .text {
-        animation: pop 1.5s cubic-bezier(.2,.9,.2,1) forwards,
-                   shake 0.5s 0.2s ease-in-out;
+        animation: pop 1.6s cubic-bezier(.2,.9,.2,1) forwards,
+                   shake 0.6s 0.1s ease-in-out;
       }
       @keyframes pop {
-        0%   { opacity: 0; transform: scale(0.4) rotate(-8deg); }
-        15%  { opacity: 1; transform: scale(1.15) rotate(2deg); }
-        25%  { transform: scale(0.98) rotate(-2deg); }
-        40%  { transform: scale(1.05) rotate(1deg); }
-        80%  { opacity: 1; transform: scale(1) rotate(0); }
-        100% { opacity: 0; transform: scale(1) rotate(0); }
+        0%   { opacity: 0; transform: scale(0.3) rotate(-10deg); }
+        12%  { opacity: 1; transform: scale(1.25) rotate(4deg); }
+        22%  { transform: scale(0.9) rotate(-3deg); }
+        35%  { transform: scale(1.1) rotate(2deg); }
+        55%  { transform: scale(1) rotate(-2deg); }
+        80%  { opacity: 1; transform: scale(1) rotate(-2deg); }
+        100% { opacity: 0; transform: scale(1) rotate(-2deg); }
       }
       @keyframes shake {
         0%,100% { translate: 0 0; }
-        20% { translate: -6px 2px; }
-        40% { translate: 6px -2px; }
-        60% { translate: -4px 1px; }
-        80% { translate: 4px -1px; }
+        20% { translate: -8px 3px; }
+        40% { translate: 8px -3px; }
+        60% { translate: -5px 2px; }
+        80% { translate: 5px -2px; }
       }
+      .combo-banner {
+        position: absolute;
+        top: 12%;
+        left: 0;
+        right: 0;
+        text-align: center;
+        pointer-events: none;
+        font-family: "Mochiy Pop P One", sans-serif;
+        font-size: clamp(24px, 6vw, 54px);
+        color: var(--pink);
+        -webkit-text-stroke: 5px #000;
+        paint-order: stroke fill;
+        text-shadow: 4px 4px 0 #000;
+        opacity: 0;
+        transform: scale(0.6) rotate(-4deg);
+        transition: none;
+        z-index: 3;
+      }
+      .combo-banner.show {
+        animation: combo 0.9s ease-out forwards;
+      }
+      @keyframes combo {
+        0%   { opacity: 0; transform: scale(0.3) rotate(-12deg); }
+        20%  { opacity: 1; transform: scale(1.2) rotate(3deg); }
+        40%  { transform: scale(0.95) rotate(-2deg); }
+        70%  { opacity: 1; transform: scale(1) rotate(0); }
+        100% { opacity: 0; transform: scale(0.9) rotate(0); }
+      }
+
+      /* Sticker cards */
       .side {
         display: flex;
         flex-direction: column;
@@ -149,76 +222,127 @@
         min-width: 0;
       }
       .card {
-        background: var(--panel);
-        border: 1px solid var(--panel-stroke);
-        border-radius: 12px;
+        background: var(--paper);
+        border: 3px solid #000;
+        border-radius: 14px;
         padding: 8px 10px;
+        box-shadow: 4px 4px 0 #000;
+        color: #000;
       }
+      .card.red { background: var(--red); color: #fff; }
+      .card.yellow { background: var(--yellow); }
+      .card.pink { background: var(--pink); color: #fff; }
       .card h3 {
-        margin: 0 0 4px;
-        font-size: 11px;
-        letter-spacing: 0.1em;
-        color: var(--muted);
-        text-transform: uppercase;
-        font-weight: 600;
+        margin: 0 0 2px;
+        font-family: "Mochiy Pop P One", sans-serif;
+        font-size: 12px;
+        letter-spacing: 0.08em;
       }
       .card .value {
-        font-size: 20px;
-        font-weight: 800;
+        font-family: "Mochiy Pop P One", sans-serif;
+        font-size: 22px;
+        line-height: 1.1;
         font-variant-numeric: tabular-nums;
+      }
+      .card .value.small { font-size: 18px; }
+      .card .best-tag {
+        display: inline-block;
+        background: #000;
+        color: var(--yellow);
+        font-family: "Mochiy Pop P One", sans-serif;
+        font-size: 10px;
+        padding: 1px 6px;
+        border-radius: 6px;
+        transform: rotate(-2deg);
+        margin-bottom: 2px;
       }
       .mini-canvas {
         width: 100%;
         aspect-ratio: 4 / 3;
-        background: rgba(0,0,0,0.3);
+        background: #fff;
+        border: 2px solid #000;
         border-radius: 8px;
         display: block;
       }
       .help {
         font-size: 11px;
-        color: var(--muted);
-        line-height: 1.5;
+        color: #000;
+        line-height: 1.6;
+        font-weight: 700;
       }
       .help kbd {
-        background: rgba(255,255,255,0.08);
-        border: 1px solid rgba(255,255,255,0.15);
+        background: #000;
+        color: var(--yellow);
         padding: 0 5px;
         border-radius: 4px;
         font-size: 10px;
+        font-family: "Mochiy Pop P One", monospace;
       }
-      /* Touch controls */
+
+      /* Touch buttons */
       .touch {
         display: none;
         grid-template-columns: repeat(6, 1fr);
         gap: 6px;
-        padding-top: 4px;
+        padding-top: 2px;
       }
       .touch button {
-        background: rgba(255,255,255,0.08);
-        border: 1px solid rgba(255,255,255,0.18);
-        color: var(--text);
-        font-size: 20px;
-        font-weight: 700;
+        background: var(--paper);
+        border: 3px solid #000;
+        color: #000;
+        font-family: "Mochiy Pop P One", sans-serif;
+        font-size: 22px;
+        font-weight: 900;
         padding: 14px 0;
-        border-radius: 12px;
+        border-radius: 14px;
         cursor: pointer;
+        box-shadow: 3px 3px 0 #000;
       }
       .touch button:active {
-        background: rgba(255,255,255,0.2);
-        transform: scale(0.96);
+        transform: translate(2px, 2px);
+        box-shadow: 1px 1px 0 #000;
       }
-      .touch .rotate { color: var(--accent); }
-      .touch .hold { color: var(--accent-2); }
-      .touch .drop { color: #48cfff; }
+      .touch .rotate { background: var(--yellow); }
+      .touch .hold { background: var(--pink); color: #fff; }
+      .touch .drop { background: var(--red); color: #fff; }
+
       @media (pointer: coarse), (max-width: 720px) {
         .touch { display: grid; }
-        main { grid-template-columns: minmax(0, 1fr) 110px; }
-        .card .value { font-size: 16px; }
+        main { grid-template-columns: minmax(0, 1fr) 120px; }
+        .card .value { font-size: 18px; }
       }
       @media (max-width: 480px) {
-        main { grid-template-columns: minmax(0, 1fr) 88px; }
+        main { grid-template-columns: minmax(0, 1fr) 96px; }
         .card { padding: 6px 8px; }
         .help { display: none; }
+      }
+
+      /* Float score popups */
+      #floaters {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+        z-index: 4;
+      }
+      .floater {
+        position: absolute;
+        font-family: "Mochiy Pop P One", sans-serif;
+        font-size: clamp(22px, 5vw, 40px);
+        color: var(--yellow);
+        -webkit-text-stroke: 4px #000;
+        paint-order: stroke fill;
+        text-shadow: 3px 3px 0 var(--red);
+        transform: translate(-50%, -50%);
+        animation: floatUp 1.1s ease-out forwards;
+        white-space: nowrap;
+      }
+      .floater.combo { color: var(--pink); }
+      .floater.quad { color: #fff; text-shadow: 3px 3px 0 var(--red), -2px -2px 0 var(--yellow); }
+      @keyframes floatUp {
+        0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+        20%  { opacity: 1; transform: translate(-50%, -65%) scale(1.1); }
+        100% { opacity: 0; transform: translate(-50%, -140%) scale(0.9); }
       }
 
       /* Game over overlay */
@@ -228,41 +352,94 @@
         display: none;
         align-items: center;
         justify-content: center;
-        background: rgba(10, 5, 25, 0.7);
-        backdrop-filter: blur(6px);
+        background: rgba(0, 0, 0, 0.75);
         border-radius: 14px;
-        z-index: 4;
+        z-index: 5;
       }
       .overlay.show { display: flex; }
       .overlay .box {
         text-align: center;
-        padding: 20px 28px;
+        padding: 18px 24px;
+        background: var(--paper);
+        border: 4px solid #000;
+        border-radius: 18px;
+        box-shadow: 6px 6px 0 #000;
+        transform: rotate(-1.5deg);
+        max-width: 92%;
       }
       .overlay h2 {
+        font-family: "Mochiy Pop P One", sans-serif;
         margin: 0 0 6px;
-        font-size: clamp(22px, 6vw, 34px);
-        background: linear-gradient(90deg, #ff4fa3, #ffd447);
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
+        font-size: clamp(22px, 6vw, 32px);
+        color: var(--red);
+        -webkit-text-stroke: 3px #000;
+        paint-order: stroke fill;
+        text-shadow: 3px 3px 0 #000;
+        white-space: nowrap;
       }
-      .overlay p { margin: 0 0 14px; color: var(--muted); }
+      .overlay .score-line {
+        font-family: "Mochiy Pop P One", sans-serif;
+        font-size: clamp(18px, 4vw, 24px);
+        color: #000;
+        margin: 6px 0;
+      }
+      .overlay .new-best {
+        display: inline-block;
+        background: var(--yellow);
+        color: #000;
+        border: 3px solid #000;
+        padding: 4px 10px;
+        border-radius: 8px;
+        transform: rotate(-3deg);
+        font-family: "Mochiy Pop P One", sans-serif;
+        font-size: 16px;
+        margin: 4px 0;
+      }
+      .overlay .actions {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 10px;
+      }
       .overlay button {
-        background: linear-gradient(90deg, #ff4fa3, #ffd447);
-        border: none;
-        color: #1b1744;
-        font-weight: 800;
-        font-size: 15px;
-        padding: 10px 22px;
+        font-family: "Mochiy Pop P One", sans-serif;
+        border: 3px solid #000;
         border-radius: 999px;
+        padding: 10px 22px;
+        font-size: 16px;
         cursor: pointer;
+        box-shadow: 3px 3px 0 #000;
+        transition: transform 0.05s;
       }
+      .overlay button:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #000; }
+      .btn-again { background: var(--red); color: #fff; }
+      .btn-share { background: var(--yellow); color: #000; }
+
+      /* Toast */
+      #toast {
+        position: fixed;
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%) translateY(30px);
+        background: #000;
+        color: var(--yellow);
+        border: 3px solid var(--yellow);
+        padding: 8px 16px;
+        border-radius: 999px;
+        font-family: "Mochiy Pop P One", sans-serif;
+        font-size: 13px;
+        opacity: 0;
+        transition: opacity 0.25s, transform 0.25s;
+        z-index: 10;
+      }
+      #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     </style>
   </head>
   <body>
     <div id="app">
       <header>
-        <h1>てんちょーテトリス</h1>
+        <h1 class="title">てんちょーテトリス<span class="dot">！</span></h1>
         <div class="top-buttons">
           <button id="btn-mute" class="icon-btn" aria-label="mute">🔊</button>
           <button id="btn-pause" class="icon-btn" aria-label="pause">⏸</button>
@@ -272,37 +449,50 @@
 
       <main>
         <div class="board-wrap">
-          <canvas id="board" width="320" height="640"></canvas>
-          <canvas id="fx" width="320" height="640"></canvas>
-          <div id="banner" class="banner"><div class="text" id="banner-text"></div></div>
-          <div id="overlay" class="overlay">
-            <div class="box">
-              <h2>GAME OVER</h2>
-              <p id="final-score">SCORE: 0</p>
-              <button id="btn-again">もう一回</button>
+          <div class="board-frame">
+            <canvas id="board" width="320" height="640"></canvas>
+            <canvas id="fx" width="320" height="640"></canvas>
+            <div id="banner" class="banner"><div class="text" id="banner-text"></div></div>
+            <div id="combo-banner" class="combo-banner"></div>
+            <div id="floaters"></div>
+            <div id="overlay" class="overlay">
+              <div class="box">
+                <h2>ゲームオーバー</h2>
+                <div id="new-best-tag" class="new-best" style="display:none">🎉 NEW BEST!</div>
+                <div class="score-line" id="final-score">SCORE: 0</div>
+                <div class="score-line" id="final-best">BEST: 0</div>
+                <div class="actions">
+                  <button class="btn-again" id="btn-again">もう一回！</button>
+                  <button class="btn-share" id="btn-share">結果をシェア</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         <aside class="side">
-          <div class="card">
-            <h3>Score</h3>
+          <div class="card red">
+            <h3>SCORE</h3>
             <div class="value" id="score">0</div>
           </div>
-          <div class="card">
-            <h3>Lines</h3>
-            <div class="value" id="lines">0</div>
+          <div class="card yellow">
+            <span class="best-tag">BEST</span>
+            <div class="value small" id="best">0</div>
           </div>
           <div class="card">
-            <h3>Level</h3>
+            <h3>LINES</h3>
+            <div class="value" id="lines">0</div>
+          </div>
+          <div class="card pink">
+            <h3>LEVEL</h3>
             <div class="value" id="level">1</div>
           </div>
           <div class="card">
-            <h3>Next</h3>
+            <h3>NEXT</h3>
             <canvas id="next" class="mini-canvas" width="120" height="90"></canvas>
           </div>
           <div class="card">
-            <h3>Hold</h3>
+            <h3>HOLD</h3>
             <canvas id="hold" class="mini-canvas" width="120" height="90"></canvas>
           </div>
           <div class="card help">
@@ -311,7 +501,7 @@
             <kbd>Space</kbd> ハード<br />
             <kbd>↑</kbd>/<kbd>X</kbd> 右回転<br />
             <kbd>Z</kbd> 左回転<br />
-            <kbd>Shift</kbd>/<kbd>C</kbd> HOLD<br />
+            <kbd>Shift</kbd> HOLD<br />
             <kbd>P</kbd> ポーズ
           </div>
         </aside>
@@ -326,6 +516,8 @@
         <button class="drop" data-key="Space">⤓</button>
       </div>
     </div>
+
+    <div id="toast"></div>
 
     <script src="tetris.js" defer></script>
   </body>
