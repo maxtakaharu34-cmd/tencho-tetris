@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+    <meta name="theme-color" content="#1b1744" />
+    <title>てんちょーテトリス</title>
+    <style>
+      :root {
+        --bg-1: #140a2e;
+        --bg-2: #3a1763;
+        --bg-3: #0c1a44;
+        --panel: rgba(255, 255, 255, 0.06);
+        --panel-stroke: rgba(255, 255, 255, 0.12);
+        --text: #f3f0ff;
+        --muted: #b8b3d9;
+        --accent: #ffd447;
+        --accent-2: #ff4fa3;
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+      }
+      body {
+        font-family: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Yu Gothic UI", sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(1200px 800px at 20% 10%, rgba(255, 79, 163, 0.18), transparent 60%),
+          radial-gradient(900px 700px at 85% 90%, rgba(72, 207, 255, 0.18), transparent 55%),
+          linear-gradient(160deg, var(--bg-1) 0%, var(--bg-2) 50%, var(--bg-3) 100%);
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+      }
+      #app {
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        height: 100dvh;
+        max-height: 100dvh;
+        padding: 10px 14px;
+        gap: 8px;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      header h1 {
+        font-size: clamp(16px, 4vw, 22px);
+        margin: 0;
+        background: linear-gradient(90deg, #ffd447, #ff4fa3 45%, #48cfff);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        letter-spacing: 0.04em;
+      }
+      .top-buttons { display: flex; gap: 6px; }
+      .icon-btn {
+        background: var(--panel);
+        border: 1px solid var(--panel-stroke);
+        color: var(--text);
+        padding: 6px 10px;
+        border-radius: 10px;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      .icon-btn:active { transform: scale(0.96); }
+      main {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 150px;
+        gap: 10px;
+        min-height: 0;
+      }
+      .board-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 0;
+      }
+      canvas#board {
+        background:
+          linear-gradient(180deg, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.55)),
+          repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 32px),
+          repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 32px);
+        border-radius: 14px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255,255,255,0.08);
+        display: block;
+        max-height: 100%;
+        max-width: 100%;
+      }
+      canvas#fx {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        border-radius: 14px;
+      }
+      .banner {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        z-index: 3;
+      }
+      .banner .text {
+        font-weight: 900;
+        font-size: clamp(34px, 9vw, 96px);
+        letter-spacing: 0.02em;
+        text-align: center;
+        padding: 6px 18px;
+        background: linear-gradient(90deg, #ffd447, #ff4fa3 40%, #48cfff);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        text-shadow: 0 0 30px rgba(255, 79, 163, 0.35);
+        opacity: 0;
+        transform: scale(0.6) rotate(-4deg);
+        filter: drop-shadow(0 6px 18px rgba(0,0,0,0.45));
+      }
+      .banner.show .text {
+        animation: pop 1.5s cubic-bezier(.2,.9,.2,1) forwards,
+                   shake 0.5s 0.2s ease-in-out;
+      }
+      @keyframes pop {
+        0%   { opacity: 0; transform: scale(0.4) rotate(-8deg); }
+        15%  { opacity: 1; transform: scale(1.15) rotate(2deg); }
+        25%  { transform: scale(0.98) rotate(-2deg); }
+        40%  { transform: scale(1.05) rotate(1deg); }
+        80%  { opacity: 1; transform: scale(1) rotate(0); }
+        100% { opacity: 0; transform: scale(1) rotate(0); }
+      }
+      @keyframes shake {
+        0%,100% { translate: 0 0; }
+        20% { translate: -6px 2px; }
+        40% { translate: 6px -2px; }
+        60% { translate: -4px 1px; }
+        80% { translate: 4px -1px; }
+      }
+      .side {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        min-width: 0;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--panel-stroke);
+        border-radius: 12px;
+        padding: 8px 10px;
+      }
+      .card h3 {
+        margin: 0 0 4px;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+        text-transform: uppercase;
+        font-weight: 600;
+      }
+      .card .value {
+        font-size: 20px;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+      }
+      .mini-canvas {
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        background: rgba(0,0,0,0.3);
+        border-radius: 8px;
+        display: block;
+      }
+      .help {
+        font-size: 11px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+      .help kbd {
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.15);
+        padding: 0 5px;
+        border-radius: 4px;
+        font-size: 10px;
+      }
+      /* Touch controls */
+      .touch {
+        display: none;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 6px;
+        padding-top: 4px;
+      }
+      .touch button {
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.18);
+        color: var(--text);
+        font-size: 20px;
+        font-weight: 700;
+        padding: 14px 0;
+        border-radius: 12px;
+        cursor: pointer;
+      }
+      .touch button:active {
+        background: rgba(255,255,255,0.2);
+        transform: scale(0.96);
+      }
+      .touch .rotate { color: var(--accent); }
+      .touch .hold { color: var(--accent-2); }
+      .touch .drop { color: #48cfff; }
+      @media (pointer: coarse), (max-width: 720px) {
+        .touch { display: grid; }
+        main { grid-template-columns: minmax(0, 1fr) 110px; }
+        .card .value { font-size: 16px; }
+      }
+      @media (max-width: 480px) {
+        main { grid-template-columns: minmax(0, 1fr) 88px; }
+        .card { padding: 6px 8px; }
+        .help { display: none; }
+      }
+
+      /* Game over overlay */
+      .overlay {
+        position: absolute;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(10, 5, 25, 0.7);
+        backdrop-filter: blur(6px);
+        border-radius: 14px;
+        z-index: 4;
+      }
+      .overlay.show { display: flex; }
+      .overlay .box {
+        text-align: center;
+        padding: 20px 28px;
+      }
+      .overlay h2 {
+        margin: 0 0 6px;
+        font-size: clamp(22px, 6vw, 34px);
+        background: linear-gradient(90deg, #ff4fa3, #ffd447);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .overlay p { margin: 0 0 14px; color: var(--muted); }
+      .overlay button {
+        background: linear-gradient(90deg, #ff4fa3, #ffd447);
+        border: none;
+        color: #1b1744;
+        font-weight: 800;
+        font-size: 15px;
+        padding: 10px 22px;
+        border-radius: 999px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <h1>てんちょーテトリス</h1>
+        <div class="top-buttons">
+          <button id="btn-mute" class="icon-btn" aria-label="mute">🔊</button>
+          <button id="btn-pause" class="icon-btn" aria-label="pause">⏸</button>
+          <button id="btn-restart" class="icon-btn" aria-label="restart">↺</button>
+        </div>
+      </header>
+
+      <main>
+        <div class="board-wrap">
+          <canvas id="board" width="320" height="640"></canvas>
+          <canvas id="fx" width="320" height="640"></canvas>
+          <div id="banner" class="banner"><div class="text" id="banner-text"></div></div>
+          <div id="overlay" class="overlay">
+            <div class="box">
+              <h2>GAME OVER</h2>
+              <p id="final-score">SCORE: 0</p>
+              <button id="btn-again">もう一回</button>
+            </div>
+          </div>
+        </div>
+
+        <aside class="side">
+          <div class="card">
+            <h3>Score</h3>
+            <div class="value" id="score">0</div>
+          </div>
+          <div class="card">
+            <h3>Lines</h3>
+            <div class="value" id="lines">0</div>
+          </div>
+          <div class="card">
+            <h3>Level</h3>
+            <div class="value" id="level">1</div>
+          </div>
+          <div class="card">
+            <h3>Next</h3>
+            <canvas id="next" class="mini-canvas" width="120" height="90"></canvas>
+          </div>
+          <div class="card">
+            <h3>Hold</h3>
+            <canvas id="hold" class="mini-canvas" width="120" height="90"></canvas>
+          </div>
+          <div class="card help">
+            <kbd>←</kbd><kbd>→</kbd> 移動<br />
+            <kbd>↓</kbd> ソフト<br />
+            <kbd>Space</kbd> ハード<br />
+            <kbd>↑</kbd>/<kbd>X</kbd> 右回転<br />
+            <kbd>Z</kbd> 左回転<br />
+            <kbd>Shift</kbd>/<kbd>C</kbd> HOLD<br />
+            <kbd>P</kbd> ポーズ
+          </div>
+        </aside>
+      </main>
+
+      <div class="touch" id="touch">
+        <button data-key="ArrowLeft">◀</button>
+        <button data-key="ArrowDown">▼</button>
+        <button data-key="ArrowRight">▶</button>
+        <button class="rotate" data-key="ArrowUp">⟳</button>
+        <button class="hold" data-key="Shift">H</button>
+        <button class="drop" data-key="Space">⤓</button>
+      </div>
+    </div>
+
+    <script src="tetris.js" defer></script>
+  </body>
+</html>
