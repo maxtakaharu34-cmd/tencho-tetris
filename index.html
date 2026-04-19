@@ -109,6 +109,12 @@
         grid-template-columns: minmax(0, 1fr) 170px;
         gap: 12px;
         min-height: 0;
+        max-height: calc(100dvh - 80px);
+        overflow: hidden;
+      }
+      aside.side {
+        min-height: 0;
+        overflow-y: auto;
       }
       .board-wrap {
         position: relative;
@@ -116,6 +122,8 @@
         align-items: center;
         justify-content: center;
         min-height: 0;
+        min-width: 0;
+        height: 100%;
       }
       .board-frame {
         position: relative;
@@ -124,6 +132,7 @@
         border: 4px solid #000;
         border-radius: 18px;
         box-shadow: 6px 6px 0 #000, 0 0 0 3px var(--yellow) inset;
+        aspect-ratio: 340 / 680;
         max-height: 100%;
         max-width: 100%;
       }
@@ -131,14 +140,17 @@
         display: block;
         background: #111;
         border-radius: 12px;
-        max-height: 100%;
-        max-width: 100%;
+        height: 100%;
+        width: 100%;
+        object-fit: contain;
       }
       canvas#fx {
         position: absolute;
         inset: 6px;
         pointer-events: none;
         border-radius: 12px;
+        width: calc(100% - 12px);
+        height: calc(100% - 12px);
       }
       .banner {
         position: absolute;
@@ -332,13 +344,13 @@
         animation: flashBurst 0.55s ease-out forwards;
       }
       #cutin.show .cutin-stripe {
-        animation: stripeSweep 0.9s cubic-bezier(.2,.7,.2,1) forwards;
+        animation: stripeSweep 1.3s cubic-bezier(.2,.7,.2,1) forwards;
       }
       #cutin.show .cutin-img {
-        animation: slideIn 1.15s cubic-bezier(.15,.8,.2,1) forwards;
+        animation: slideIn 1.9s cubic-bezier(.15,.8,.2,1) forwards;
       }
       #cutin.show .cutin-text {
-        animation: textPunch 1.1s cubic-bezier(.15,.85,.25,1) forwards;
+        animation: textPunch 1.8s cubic-bezier(.15,.85,.25,1) forwards;
       }
       .cutin-flash {
         position: absolute;
@@ -382,36 +394,38 @@
       }
       .cutin-text {
         position: absolute;
-        left: 5%;
-        top: 16%;
+        left: 50%;
+        top: 50%;
         font-family: "Mochiy Pop P One", sans-serif;
         color: var(--yellow);
         -webkit-text-stroke: 4px #000;
         paint-order: stroke fill;
         text-shadow: 3px 3px 0 var(--red), 6px 6px 0 #000;
         line-height: 1;
-        transform: scale(0.4) rotate(-8deg);
-        transform-origin: left center;
+        transform: translate(-50%, -50%) scale(0.4) rotate(-8deg);
+        transform-origin: center center;
         opacity: 0;
         z-index: 3;
         display: flex;
         flex-direction: column;
         gap: 6px;
+        align-items: center;
         pointer-events: none;
+        text-align: center;
       }
       .cutin-line1 {
-        font-size: clamp(18px, 5vw, 30px);
+        font-size: clamp(22px, 6vw, 36px);
         transform: rotate(-4deg);
         display: inline-block;
         white-space: nowrap;
       }
       .cutin-line2 {
-        font-size: clamp(24px, 6.5vw, 42px);
+        font-size: clamp(28px, 7.5vw, 48px);
         display: inline-block;
         white-space: nowrap;
         color: #fff;
         text-shadow: 3px 3px 0 var(--pink), 6px 6px 0 #000;
-        transform: rotate(2deg) translateX(6px);
+        transform: rotate(2deg);
       }
       .cutin-text .combo-num {
         display: inline-block;
@@ -421,6 +435,27 @@
         transform: rotate(-8deg) translateY(2px);
         margin-right: 4px;
         text-shadow: 3px 3px 0 var(--red), 6px 6px 0 #000;
+      }
+      /* Semi-opaque dimmer behind cut-in text so it stays readable */
+      .cutin-dim {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          circle at 50% 50%,
+          rgba(0, 0, 0, 0.55) 0%,
+          rgba(0, 0, 0, 0.35) 40%,
+          transparent 80%
+        );
+        opacity: 0;
+      }
+      #cutin.show .cutin-dim {
+        animation: dimPulse 1.6s ease-out forwards;
+      }
+      @keyframes dimPulse {
+        0%   { opacity: 0; }
+        15%  { opacity: 1; }
+        75%  { opacity: 1; }
+        100% { opacity: 0; }
       }
       @keyframes flashBurst {
         0%   { opacity: 0; }
@@ -441,13 +476,13 @@
         100% { opacity: 0; transform: translateX(10%) rotate(0deg) scale(1); }
       }
       @keyframes textPunch {
-        0%   { opacity: 0; transform: scale(0.3) rotate(-15deg); }
-        12%  { opacity: 1; transform: scale(1.35) rotate(6deg); }
-        25%  { transform: scale(0.9) rotate(-4deg); }
-        40%  { transform: scale(1.08) rotate(2deg); }
-        60%  { transform: scale(1) rotate(-2deg); }
-        85%  { opacity: 1; transform: scale(1) rotate(-2deg); }
-        100% { opacity: 0; transform: scale(1.05) rotate(-2deg); }
+        0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.3) rotate(-15deg); }
+        10%  { opacity: 1; transform: translate(-50%, -50%) scale(1.35) rotate(6deg); }
+        20%  { transform: translate(-50%, -50%) scale(0.95) rotate(-4deg); }
+        30%  { transform: translate(-50%, -50%) scale(1.08) rotate(2deg); }
+        45%  { transform: translate(-50%, -50%) scale(1) rotate(-2deg); }
+        90%  { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(-2deg); }
+        100% { opacity: 0; transform: translate(-50%, -50%) scale(1.1) rotate(-2deg); }
       }
       /* Screen shake when cut-in fires */
       .board-frame.shake {
@@ -561,6 +596,78 @@
       .btn-again { background: var(--red); color: #fff; }
       .btn-share { background: var(--yellow); color: #000; }
 
+      /* Start overlay */
+      .start-overlay {
+        background: radial-gradient(
+          circle at 50% 40%,
+          rgba(40, 0, 15, 0.85) 0%,
+          rgba(0, 0, 0, 0.95) 80%
+        );
+        z-index: 7;
+      }
+      .start-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        padding: 22px 28px;
+      }
+      .start-title {
+        font-family: "Mochiy Pop P One", sans-serif;
+        font-size: clamp(28px, 9vw, 54px);
+        line-height: 1;
+        color: var(--yellow);
+        -webkit-text-stroke: 5px #000;
+        paint-order: stroke fill;
+        text-shadow: 4px 4px 0 var(--red), 8px 8px 0 #000;
+        transform: rotate(-3deg);
+        text-align: center;
+        white-space: nowrap;
+      }
+      .start-title .dot { color: var(--red); display: inline-block; transform: rotate(6deg); }
+      .start-sub {
+        font-family: "Mochiy Pop P One", sans-serif;
+        font-size: clamp(14px, 3.4vw, 18px);
+        color: #000;
+        text-align: center;
+        line-height: 1.4;
+        margin-top: 4px;
+      }
+      .start-sub .start-accent {
+        color: var(--red);
+        -webkit-text-stroke: 2px #000;
+        paint-order: stroke fill;
+        font-size: 1.15em;
+      }
+      .btn-start {
+        background: var(--red);
+        color: #fff;
+        border: 4px solid #000;
+        border-radius: 999px;
+        padding: 14px 36px;
+        font-family: "Mochiy Pop P One", sans-serif;
+        font-size: clamp(20px, 5vw, 28px);
+        cursor: pointer;
+        box-shadow: 5px 5px 0 #000;
+        letter-spacing: 0.04em;
+        transition: transform 0.05s;
+        animation: btnPulse 1.2s ease-in-out infinite;
+      }
+      .btn-start:active {
+        transform: translate(3px, 3px);
+        box-shadow: 2px 2px 0 #000;
+      }
+      @keyframes btnPulse {
+        0%, 100% { transform: scale(1) rotate(-1deg); }
+        50%      { transform: scale(1.06) rotate(1deg); }
+      }
+      .start-hint {
+        font-size: 11px;
+        color: #000;
+        font-weight: 700;
+        opacity: 0.75;
+      }
+
       /* Toast */
       #toast {
         position: fixed;
@@ -601,6 +708,7 @@
             <div id="combo-banner" class="combo-banner"></div>
             <div id="cutin">
               <div class="cutin-flash"></div>
+              <div class="cutin-dim"></div>
               <div class="cutin-stripe"></div>
               <img class="cutin-img" id="cutin-img" src="assets/ueda.png" alt="上田" />
               <div class="cutin-text" id="cutin-text">
@@ -609,6 +717,14 @@
               </div>
             </div>
             <div id="floaters"></div>
+            <div id="start-overlay" class="overlay start-overlay show">
+              <div class="box start-box">
+                <div class="start-title">てんちょー<br/>テトリス<span class="dot">！</span></div>
+                <div class="start-sub">4ライン消しで<br/><span class="start-accent">てんちょーさん！</span></div>
+                <button class="btn-start" id="btn-start">▶ START</button>
+                <div class="start-hint">PC: キーボード / スマホ: タッチ</div>
+              </div>
+            </div>
             <div id="overlay" class="overlay">
               <div class="box">
                 <h2>ゲームオーバー</h2>

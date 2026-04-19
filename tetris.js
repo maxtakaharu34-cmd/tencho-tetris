@@ -92,6 +92,8 @@
   const boardFrameEl = document.querySelector('.board-frame');
   const floatersEl = document.getElementById('floaters');
   const overlayEl = document.getElementById('overlay');
+  const startOverlayEl = document.getElementById('start-overlay');
+  const btnStart = document.getElementById('btn-start');
   const finalScoreEl = document.getElementById('final-score');
   const finalBestEl = document.getElementById('final-best');
   const newBestTagEl = document.getElementById('new-best-tag');
@@ -196,6 +198,7 @@
   let lastT = 0;
   let paused = false;
   let gameover = false;
+  let started = false;
   const rowFlashes = []; // { y, t, life }
   const particles = [];
 
@@ -417,7 +420,7 @@
     cutinTimer = setTimeout(() => {
       cutinEl.classList.remove('show');
       boardFrameEl.classList.remove('shake');
-    }, 1200);
+    }, 1900);
   };
 
   let comboTimer = 0;
@@ -597,7 +600,7 @@
     if (!lastT) lastT = t;
     const dt = t - lastT;
     lastT = t;
-    if (!paused && !gameover) {
+    if (started && !paused && !gameover) {
       dropAcc += dt;
       if (dropAcc >= dropInterval) {
         dropAcc = 0;
@@ -629,7 +632,7 @@
       btnPause.textContent = paused ? '▶' : '⏸';
       return;
     }
-    if (paused || gameover) return;
+    if (!started || paused || gameover) return;
     Sound.prime();
     switch (e.key) {
       case 'ArrowLeft':  if (tryMove(-1, 0)) Sound.move(); e.preventDefault && e.preventDefault(); break;
@@ -680,6 +683,13 @@
   btnRestart.addEventListener('click', () => restart());
   btnAgain.addEventListener('click', () => restart());
   btnShare.addEventListener('click', () => shareResult());
+  btnStart.addEventListener('click', () => {
+    Sound.prime();
+    startOverlayEl.classList.remove('show');
+    started = true;
+    lastT = 0;
+    dropAcc = 0;
+  });
 
   // ---------- Toast ----------
   let toastTimer = 0;
