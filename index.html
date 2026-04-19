@@ -368,61 +368,63 @@
 
       @media (pointer: coarse), (max-width: 720px) {
         .touch { display: grid; }
-        /* Vertical mobile layout: stats on top, board big in middle, touch at bottom */
+        /* Vertical mobile: compact stat strip on top, board fills remaining space */
+        #app {
+          padding: 6px 8px 4px;
+          gap: 4px;
+          grid-template-rows: auto 1fr auto;
+        }
         main {
           grid-template-columns: 1fr;
           grid-template-rows: auto 1fr;
-          gap: 6px;
-          max-height: calc(100dvh - 70px);
+          gap: 4px;
+          max-height: none;
+          overflow: visible;
         }
         aside.side {
           order: -1;
           flex-direction: row;
-          align-items: stretch;
-          gap: 6px;
+          align-items: center;
+          gap: 5px;
           overflow: visible;
           max-height: none;
           min-height: 0;
         }
+        /* Stat cards: single horizontal 4-column strip */
         .stat-grid {
-          grid-template-columns: repeat(2, 1fr);
-          grid-auto-rows: 1fr;
+          grid-template-columns: repeat(4, 1fr);
+          grid-template-rows: 1fr;
           gap: 4px;
           flex: 1 1 auto;
           min-width: 0;
         }
         .stat-grid .card { padding: 3px 6px; }
-        .stat-grid .card h3 { font-size: 9px; }
-        .stat-grid .card .value { font-size: 14px; }
+        .stat-grid .card h3 { font-size: 8px; }
+        .stat-grid .card .value { font-size: 13px; }
         .stat-grid .card .value.small { font-size: 12px; }
-        .stat-grid .card .best-tag { font-size: 8px; padding: 0 4px; }
-        .preview-card {
-          grid-template-columns: 1fr 1fr;
-          gap: 4px;
-          padding: 4px 5px;
-          flex: 0 0 130px;
-          max-width: 130px;
-        }
-        .preview-col h3 { font-size: 9px; }
-        .mini-canvas { aspect-ratio: 5 / 3; border-radius: 5px; }
+        .stat-grid .card .best-tag { font-size: 7px; padding: 0 3px; }
+        /* Hide NEXT/HOLD and help on mobile to give board more room */
+        .preview-card { display: none; }
         .help { display: none; }
-        .board-wrap { order: 0; }
+        .board-wrap { order: 0; min-height: 0; }
         .board-frame {
           aspect-ratio: 340 / 680;
           max-height: 100%;
           max-width: 100%;
         }
-        #app { padding: 8px 10px 6px; gap: 6px; }
-        .title { font-size: clamp(18px, 4.8vw, 26px); }
-        .icon-btn { padding: 5px 10px; font-size: 13px; }
-        .touch { grid-template-columns: repeat(6, 1fr); gap: 5px; }
-        .touch button { padding: 16px 0; font-size: 22px; min-height: 56px; }
+        .title { font-size: clamp(16px, 4.5vw, 24px); }
+        .icon-btn { padding: 4px 8px; font-size: 12px; }
+        /* Touch gamepad: keep 3fr/2fr split, adjust button height */
+        .touch { gap: 5px; padding-top: 0; }
+        .touch button { min-height: 52px; }
+        .touch button .ico { font-size: 20px; }
+        .touch button .lbl { font-size: 10px; }
       }
-      @media (pointer: coarse) and (max-width: 420px),
-             (max-width: 420px) {
-        .stat-grid .card .value { font-size: 13px; }
-        .preview-card { flex-basis: 110px; max-width: 110px; }
-        .touch button { padding: 14px 0; font-size: 20px; min-height: 52px; }
+      @media (pointer: coarse) and (max-width: 380px),
+             (max-width: 380px) {
+        .touch button { min-height: 46px; }
+        .touch button .ico { font-size: 18px; }
+        .touch button .lbl { font-size: 9px; }
       }
 
       /* Ueda cut-in overlay (dramatic combo celebration) */
