@@ -445,17 +445,24 @@
         opacity: 0;
         transform: skewX(-10deg);
       }
-      .cutin-img {
+      .cutin-img-wrap {
         position: absolute;
-        right: -40%;
-        bottom: -2%;
-        height: 105%;
-        max-height: 105%;
+        inset: 0;
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        pointer-events: none;
+        overflow: hidden;
+        z-index: 2;
+      }
+      .cutin-img {
+        height: 100%;
+        max-height: 100%;
         opacity: 0;
         filter: drop-shadow(-6px 6px 0 #000) drop-shadow(8px 0 0 var(--red));
-        transform: translateX(80%) rotate(6deg) scale(0.9);
-        z-index: 2;
+        transform: translateX(120%) rotate(10deg) scale(0.85);
         pointer-events: none;
+        transform-origin: center bottom;
       }
       .cutin-text {
         position: absolute;
@@ -533,12 +540,12 @@
         100% { opacity: 0; left: 120%; }
       }
       @keyframes slideIn {
-        0%   { opacity: 0; transform: translateX(80%) rotate(6deg) scale(0.9); }
-        25%  { opacity: 1; transform: translateX(0) rotate(-4deg) scale(1.08); }
-        40%  { transform: translateX(-2%) rotate(0deg) scale(1); }
-        55%  { transform: translateX(0) rotate(-2deg) scale(1.02); }
+        0%   { opacity: 0; transform: translateX(120%) rotate(10deg) scale(0.85); }
+        22%  { opacity: 1; transform: translateX(-4%) rotate(-7deg) scale(1.1); }
+        38%  { transform: translateX(3%) rotate(3deg) scale(1); }
+        55%  { transform: translateX(0) rotate(-2deg) scale(1.03); }
         85%  { opacity: 1; transform: translateX(0) rotate(0deg) scale(1); }
-        100% { opacity: 0; transform: translateX(10%) rotate(0deg) scale(1); }
+        100% { opacity: 0; transform: translateX(0) rotate(0deg) scale(1.02); }
       }
       @keyframes textPunch {
         0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.3) rotate(-15deg); }
@@ -775,7 +782,9 @@
               <div class="cutin-flash"></div>
               <div class="cutin-dim"></div>
               <div class="cutin-stripe"></div>
-              <img class="cutin-img" id="cutin-img" src="assets/ueda.png" alt="上田" />
+              <div class="cutin-img-wrap">
+                <img class="cutin-img" id="cutin-img" src="assets/ueda.png" alt="上田" />
+              </div>
               <div class="cutin-text" id="cutin-text">
                 <span class="cutin-line1">上田の</span>
                 <span class="cutin-line2"><span class="combo-num" id="cutin-num">1</span> COMBO！</span>
