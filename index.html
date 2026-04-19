@@ -308,18 +308,18 @@
         margin: 0 1px;
       }
 
-      /* Touch buttons (gamepad layout) */
+      /* Touch buttons — iOS game controller style */
       .touch {
         display: none;
         grid-template-columns: 3fr 2fr;
-        gap: 8px;
-        padding-top: 2px;
+        gap: 10px;
+        padding: 4px 0 6px;
       }
       .touch-dpad {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         grid-template-rows: 1fr 1fr;
-        gap: 5px;
+        gap: 8px;
       }
       .touch-dpad .t-rotate { grid-column: 2; grid-row: 1; }
       .touch-dpad .t-left   { grid-column: 1; grid-row: 2; }
@@ -328,43 +328,63 @@
       .touch-actions {
         display: grid;
         grid-template-rows: 1fr 1fr;
-        gap: 5px;
+        gap: 8px;
       }
+      /* Base: circular glass button */
       .touch button {
-        background: var(--paper);
-        border: 3px solid #000;
-        color: #000;
-        font-family: "Mochiy Pop P One", sans-serif;
-        font-weight: 900;
-        padding: 4px;
-        border-radius: 12px;
+        background: rgba(255,255,255,0.13);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255,255,255,0.22);
+        color: #fff;
+        font-size: 22px;
+        border-radius: 50%;
+        aspect-ratio: 1;
         cursor: pointer;
-        box-shadow: 3px 3px 0 #000;
         display: flex;
-        flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 0;
-        min-height: 44px;
-      }
-      .touch button .ico {
-        font-size: 22px;
-        line-height: 1;
-      }
-      .touch button .lbl {
-        font-size: 11px;
-        line-height: 1.1;
-        letter-spacing: 0.04em;
-        margin-top: 2px;
+        min-height: 52px;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.18);
+        transition: background 0.1s, transform 0.1s;
+        -webkit-tap-highlight-color: transparent;
       }
       .touch button:active {
-        transform: translate(2px, 2px);
-        box-shadow: 1px 1px 0 #000;
+        background: rgba(255,255,255,0.28);
+        transform: scale(0.88);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       }
-      .touch .t-rotate { background: var(--yellow); }
-      .touch .t-hold   { background: var(--pink); color: #fff; }
-      .touch .t-drop   { background: var(--red); color: #fff; }
-      .touch .t-left, .touch .t-right, .touch .t-down { background: var(--paper); }
+      /* Action buttons: pill shape instead of circle */
+      .touch-actions button {
+        border-radius: 18px;
+        aspect-ratio: auto;
+        flex-direction: column;
+        gap: 2px;
+        font-size: 20px;
+      }
+      .touch-actions button span {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        opacity: 0.85;
+        font-family: -apple-system, "SF Pro Display", sans-serif;
+      }
+      /* Color accents */
+      .touch .t-rotate {
+        background: rgba(255,214,10,0.22);
+        border-color: rgba(255,214,10,0.4);
+        color: #ffd60a;
+      }
+      .touch .t-drop {
+        background: rgba(255,55,95,0.22);
+        border-color: rgba(255,55,95,0.4);
+        color: #ff375f;
+      }
+      .touch .t-hold {
+        background: rgba(10,132,255,0.22);
+        border-color: rgba(10,132,255,0.4);
+        color: #5ac8fa;
+      }
 
       @media (pointer: coarse), (max-width: 720px) {
         .touch { display: grid; }
@@ -414,17 +434,13 @@
         }
         .title { font-size: clamp(16px, 4.5vw, 24px); }
         .icon-btn { padding: 4px 8px; font-size: 12px; }
-        /* Touch gamepad: keep 3fr/2fr split, adjust button height */
-        .touch { gap: 5px; padding-top: 0; }
-        .touch button { min-height: 52px; }
-        .touch button .ico { font-size: 20px; }
-        .touch button .lbl { font-size: 10px; }
+        .touch { gap: 8px; padding: 2px 0 4px; }
+        .touch button { min-height: 52px; font-size: 20px; }
+        .touch-actions button { font-size: 18px; }
       }
       @media (pointer: coarse) and (max-width: 380px),
              (max-width: 380px) {
-        .touch button { min-height: 46px; }
-        .touch button .ico { font-size: 18px; }
-        .touch button .lbl { font-size: 9px; }
+        .touch button { min-height: 46px; font-size: 18px; }
       }
 
       /* Ueda cut-in overlay (dramatic combo celebration) */
@@ -885,26 +901,14 @@
 
       <div class="touch" id="touch">
         <div class="touch-dpad">
-          <button class="t-rotate" data-key="ArrowUp">
-            <span class="ico">⟳</span><span class="lbl">回転</span>
-          </button>
-          <button class="t-left" data-key="ArrowLeft">
-            <span class="ico">◀</span><span class="lbl">左</span>
-          </button>
-          <button class="t-down" data-key="ArrowDown">
-            <span class="ico">▼</span><span class="lbl">ソフト</span>
-          </button>
-          <button class="t-right" data-key="ArrowRight">
-            <span class="ico">▶</span><span class="lbl">右</span>
-          </button>
+          <button class="t-rotate" data-key="ArrowUp">⟳</button>
+          <button class="t-left"   data-key="ArrowLeft">◀</button>
+          <button class="t-down"   data-key="ArrowDown">▼</button>
+          <button class="t-right"  data-key="ArrowRight">▶</button>
         </div>
         <div class="touch-actions">
-          <button class="t-drop" data-key="Space">
-            <span class="ico">⤓</span><span class="lbl">ハードドロップ</span>
-          </button>
-          <button class="t-hold" data-key="Shift">
-            <span class="ico">✋</span><span class="lbl">HOLD</span>
-          </button>
+          <button class="t-drop" data-key="Space">⤓<span>DROP</span></button>
+          <button class="t-hold" data-key="Shift">✋<span>HOLD</span></button>
         </div>
       </div>
     </div>
