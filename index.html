@@ -308,32 +308,63 @@
         margin: 0 1px;
       }
 
-      /* Touch buttons */
+      /* Touch buttons (gamepad layout) */
       .touch {
         display: none;
-        grid-template-columns: repeat(6, 1fr);
-        gap: 6px;
+        grid-template-columns: 3fr 2fr;
+        gap: 8px;
         padding-top: 2px;
+      }
+      .touch-dpad {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: 1fr 1fr;
+        gap: 5px;
+      }
+      .touch-dpad .t-rotate { grid-column: 2; grid-row: 1; }
+      .touch-dpad .t-left   { grid-column: 1; grid-row: 2; }
+      .touch-dpad .t-down   { grid-column: 2; grid-row: 2; }
+      .touch-dpad .t-right  { grid-column: 3; grid-row: 2; }
+      .touch-actions {
+        display: grid;
+        grid-template-rows: 1fr 1fr;
+        gap: 5px;
       }
       .touch button {
         background: var(--paper);
         border: 3px solid #000;
         color: #000;
         font-family: "Mochiy Pop P One", sans-serif;
-        font-size: 22px;
         font-weight: 900;
-        padding: 14px 0;
-        border-radius: 14px;
+        padding: 4px;
+        border-radius: 12px;
         cursor: pointer;
         box-shadow: 3px 3px 0 #000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+        min-height: 44px;
+      }
+      .touch button .ico {
+        font-size: 22px;
+        line-height: 1;
+      }
+      .touch button .lbl {
+        font-size: 11px;
+        line-height: 1.1;
+        letter-spacing: 0.04em;
+        margin-top: 2px;
       }
       .touch button:active {
         transform: translate(2px, 2px);
         box-shadow: 1px 1px 0 #000;
       }
-      .touch .rotate { background: var(--yellow); }
-      .touch .hold { background: var(--pink); color: #fff; }
-      .touch .drop { background: var(--red); color: #fff; }
+      .touch .t-rotate { background: var(--yellow); }
+      .touch .t-hold   { background: var(--pink); color: #fff; }
+      .touch .t-drop   { background: var(--red); color: #fff; }
+      .touch .t-left, .touch .t-right, .touch .t-down { background: var(--paper); }
 
       @media (pointer: coarse), (max-width: 720px) {
         .touch { display: grid; }
@@ -851,12 +882,28 @@
       </main>
 
       <div class="touch" id="touch">
-        <button data-key="ArrowLeft">◀</button>
-        <button data-key="ArrowDown">▼</button>
-        <button data-key="ArrowRight">▶</button>
-        <button class="rotate" data-key="ArrowUp">⟳</button>
-        <button class="hold" data-key="Shift">H</button>
-        <button class="drop" data-key="Space">⤓</button>
+        <div class="touch-dpad">
+          <button class="t-rotate" data-key="ArrowUp">
+            <span class="ico">⟳</span><span class="lbl">回転</span>
+          </button>
+          <button class="t-left" data-key="ArrowLeft">
+            <span class="ico">◀</span><span class="lbl">左</span>
+          </button>
+          <button class="t-down" data-key="ArrowDown">
+            <span class="ico">▼</span><span class="lbl">ソフト</span>
+          </button>
+          <button class="t-right" data-key="ArrowRight">
+            <span class="ico">▶</span><span class="lbl">右</span>
+          </button>
+        </div>
+        <div class="touch-actions">
+          <button class="t-drop" data-key="Space">
+            <span class="ico">⤓</span><span class="lbl">ハードドロップ</span>
+          </button>
+          <button class="t-hold" data-key="Shift">
+            <span class="ico">✋</span><span class="lbl">HOLD</span>
+          </button>
+        </div>
       </div>
     </div>
 
