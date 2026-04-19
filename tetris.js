@@ -87,6 +87,9 @@
   const bannerEl = document.getElementById('banner');
   const bannerTextEl = document.getElementById('banner-text');
   const comboBannerEl = document.getElementById('combo-banner');
+  const cutinEl = document.getElementById('cutin');
+  const cutinNumEl = document.getElementById('cutin-num');
+  const boardFrameEl = document.querySelector('.board-frame');
   const floatersEl = document.getElementById('floaters');
   const overlayEl = document.getElementById('overlay');
   const finalScoreEl = document.getElementById('final-score');
@@ -324,10 +327,11 @@
       Sound.clear(n);
     }
 
-    // Combo banner
-    if (combo >= 2) {
+    // Combo banner + Ueda cut-in (fires from 1 COMBO to showcase drama)
+    if (combo >= 1) {
       showComboBanner(`${combo} COMBO！`);
-      spawnFloater(`+${comboBonus}`, xPx, yPx - CELL, 'combo');
+      showUedaCutIn(combo);
+      if (comboBonus > 0) spawnFloater(`+${comboBonus}`, xPx, yPx - CELL, 'combo');
       Sound.combo(combo);
     }
 
@@ -400,6 +404,22 @@
     clearTimeout(bannerTimer);
     bannerTimer = setTimeout(() => bannerEl.classList.remove('show'), 1700);
   };
+  let cutinTimer = 0;
+  const showUedaCutIn = (comboCount) => {
+    cutinNumEl.textContent = String(comboCount);
+    cutinEl.classList.remove('show');
+    boardFrameEl.classList.remove('shake');
+    // force reflow so animations re-trigger
+    void cutinEl.offsetWidth;
+    cutinEl.classList.add('show');
+    boardFrameEl.classList.add('shake');
+    clearTimeout(cutinTimer);
+    cutinTimer = setTimeout(() => {
+      cutinEl.classList.remove('show');
+      boardFrameEl.classList.remove('shake');
+    }, 1200);
+  };
+
   let comboTimer = 0;
   const showComboBanner = (text) => {
     comboBannerEl.textContent = text;
